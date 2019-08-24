@@ -26,15 +26,15 @@
     name: 'login-suscribe-list',
     components: { UserIcon },
     computed: {
-      ...mapState('user', { user: s => s.current }),
+      ...mapState('user', { user: s => s.currentUser }),
     },
     methods: {
       suscribe() {
-        //this.$router.push({ name: GO.SUSCRIBE });
+        this.$router.push({ name: 'suscribe' });
         this.$emit('close')
       },
       connect() {
-        //this.$router.push({ name: GO.LOGIN });
+        this.$router.push({ name: 'login' });
         this.$emit('close')
       },
     },

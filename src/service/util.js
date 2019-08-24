@@ -19,3 +19,6 @@ export const initiales = (fullname) => {
   }
   return nameSplit[0].charAt(0) + nameSplit[1].charAt(0)
 }
+
+export const displayDate = date => date && date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+export const displayHour = date => date && date.toLocaleTimeString('fr-FR')

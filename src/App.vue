@@ -1,36 +1,31 @@
 <template>
-    <v-app>
-        <v-app-bar app>
-            <v-avatar size="48px"><img alt="Family" src="@/assets/logo.svg" style="width: 48px;height:48px"></v-avatar>
-            <v-toolbar-title class="headline text-uppercase">
-                <span class="font-weight-light">FAMILLE {{version}}</span>
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <logged-in :user="user"/>
-        </v-app-bar>
-        <v-content>
-            <router-view/>
-            <snack :snack="snack"></snack>
-        </v-content>
+    <v-app id="app" :light="!dark" :dark="dark">
+        <transition name="slide-fade-simple" mode="out-in">
+            <router-view></router-view>
+        </transition>
+        <snack :snack="snack"></snack>
     </v-app>
 </template>
 
 <script>
-  import { mapState } from 'vuex';
-  import UserIcon from './components/user/UserIcon';
-  import Snack from "./components/snack/Snack"
+  import { mapState } from 'vuex'
+  import UserIcon from './components/user/UserIcon'
+  import Snack from './components/snack/Snack'
   import LoggedIn from './components/user/LoggedIn'
+  import LoginSuscribeList from './components/user/LoginSuscribeList'
+  import Card from './components/card/Card'
 
   export default {
     name: 'App',
-    components: { LoggedIn, Snack, UserIcon },
+    components: { Card, LoginSuscribeList, LoggedIn, Snack, UserIcon },
     computed: {
       ...mapState({
-        version: s => s.app.version,
-        user: s => s.user.current,
-        snack: s => s.snack.snack
+        snack: s => s.snack.snack,
+        dark: s => s.app.dark,
       }),
     },
-
-  };
+    mounted() {
+      this.$store.dispatch('app/mount')
+    },
+  }
 </script>

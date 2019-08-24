@@ -1,76 +1,77 @@
-import { del, paramsOf, post, put } from '../api/rest'
+import { del, get, paramsOf, post, put } from '../api/rest'
+import { createStringObjectId } from '../service/calculations'
 
 export default {
   namespaced: true,
   state: {
-    showViewEdit: false,
-    current: null,
-    monthEvents: [...Array(6)].map(() => {
-      const day = Math.floor(Math.random() * 30)
-      const d = new Date()
-      d.setDate(day)
-      return {
-        _id: day + Math.random(),
-        date: d,
-        title: day,
-      }
-    }),
-    dayEvents: [...Array(2)].map(() => {
-      const day = Math.floor(Math.random() * 30)
-      const d = new Date()
-      d.setDate(day)
-      return {
-        _id: day + Math.random(),
-        date: d,
-        title: day + Math.random(),
-      }
-    }),
+    newEvent: null,
+    openedEvent: null,
+    events: null,
+    params: null,
+    expandedEvent: null,
   },
   mutations: {
-    setCurrent(state, event) {
-      state.current = event
+    setNewEvent(state, event) {
+      state.newEvent = event
     },
-    setMonthEvents(state, events) {
-      state.monthEvents = events
+    setOpenedEvent(state, event) {
+      state.openedEvent = event
     },
-    open(state) {
-      state.showViewEdit = true
+    setEvents(state, events) {
+      state.events = events
     },
-    close(state) {
-      state.showViewEdit = false
+    setParams(state, params) {
+      state.params = params
+    },
+    setExpanded(state, expanded) {
+      state.expandedEvent = expanded
     },
   },
   actions: {
-    addEvent({ commit }) {
-      commit('open')
+    expandEvent({ commit, state }, event) {
+      commit('setExpanded', state.expandedEvent === event ? null : event)
+    },
+    initNewEvent({ commit }, { oid }) {
+      commit('setNewEvent', {
+        oid,
+        _id: createStringObjectId(),
+        date: new Date(),
+        title: 'Choisir un titre',
+      })
+    },
+    cancelNewEvent({ commit }) {
+      commit('setNewEvent', null)
     },
     open({ commit }, event) {
-      commit('selectDay', event)
-      commit('open')
+      commit('setOpenedEvent', event)
     },
     close({ commit }) {
       commit('close')
     },
-    async searchMonth({ commit }, params) {
-      commit('setMonthEvents', await get(`api/events${paramsOf(params)}`))
+    search({ commit, dispatch }, params) {
+      commit('setParams', params)
+      return dispatch('loadEvents')
     },
-    async searchDay({ commit }, params) {
-      commit('setDayEvents', await get(`api/events${paramsOf(params)}`))
+    async loadEvents({ commit, state }) {
+      commit('setEvents', (await get(`api/events${paramsOf(state.params)}`)).map(e =>
+        ({
+          ...e,
+          date: new Date(e.date),
+          createdAt: new Date(e.createdAt),
+          updatedAt: new Date(e.updatedAt),
+        })))
     },
-    async loadCurrent({ commit }, { _id }) {
-      commit('open', await get(`api/event/${_id}`))
+    async saveNewEvent({ commit, dispatch, state }) {
+      await post('api/event', state.newEvent)
+      commit('setNewEvent', null)
+      dispatch('loadEvents')
     },
-    save({}, event) {
-      return post('api/event', event)
-    },
-    update({}, event) {
+    updateEvent({ dispatch }, event) {
       return put('api/event', event)
     },
-    remove({}, { _id }) {
-      return del(`api/event/${_id}`)
+    async deleteEvent({ commit, dispatch }, event) {
+      await del(`api/event/${event._id}`)
+      dispatch('loadEvents')
     },
-  },
-  getters: {
-    selectedDayDate: s => s.current && new Date(s.current),
   },
 }

@@ -1,5 +1,5 @@
 <template>
-    <v-date-picker fullWidth landscape locale="fr-FR" v-model="dateString"></v-date-picker>
+    <v-date-picker fullWidth :landscape="$vuetify.breakpoint.mdAndUp" locale="fr-FR" v-model="dateString"></v-date-picker>
 </template>
 
 <script>
@@ -9,11 +9,11 @@
       dateString: null,
     }),
     props: {
-      value: Date
+      value: Date,
     },
     methods: {
       validate() {
-        this.$emit('save', this.final);
+        this.$emit('input', this.final)
       },
     },
     computed: {
@@ -22,7 +22,7 @@
       },
       final() {
         return new Date(`${this.dateString}${this.initial ? this.initial.toISOString().substr(10) : ''}`)
-      }
+      },
     },
     watch: {
       initial() {
@@ -30,7 +30,7 @@
       },
       dateString(v) {
         v && this.validate()
-      }
-    }
-  };
+      },
+    },
+  }
 </script>

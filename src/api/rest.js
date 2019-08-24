@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRessource from 'vue-resource'
 import root from 'window-or-global'
 import user from '../store/user'
-import { isNil } from '../util/util'
+import { isNil } from '../service/util'
 
 export const X_ACCESS_TOKEN = 'x-access-token'
 export const X_REQUEST_ID = 'x-request-id'
@@ -28,6 +28,7 @@ export const arrayOf = (param, values) => {
 }
 
 export const paramsOf = params => {
+  if (!params) return ''
   const keys = Object.keys(params)
   const arr = []
   for (let i = 0; i < keys.length; i++) {
@@ -42,7 +43,7 @@ export const paramsOf = params => {
 const token = () => user.state.token && { [X_ACCESS_TOKEN]: user.state.token } || {}
 const xRequestId = () => user.state.xRequestId && { [X_REQUEST_ID]: user.state.xRequestId } || {}
 
-export const get = async (url, reqOpts) => (await Vue.http.get(url, { json: true, headers: { ...xRequestId() }, ...reqOpts })).body
+export const get = async (url, reqOpts) => (await Vue.http.get(url, { json: true, headers: { ...token(), ...xRequestId() }, ...reqOpts })).body
 export const del = (url, reqOpts) => Vue.http.delete(url, { json: true, headers: { ...token(), ...xRequestId() }, ...reqOpts })
 export const post = (url, body, reqOpts) => Vue.http.post(url, body, { json: true, headers: { ...token(), ...xRequestId() }, ...reqOpts })
 export const put = (url, body, reqOpts) => Vue.http.put(url, body, { json: true, headers: { ...token(), ...xRequestId() }, ...reqOpts })
