@@ -31,9 +31,10 @@ export default {
     expandEvent({ commit, state }, event) {
       commit('setExpanded', state.expandedEvent === event ? null : event)
     },
-    initNewEvent({ commit }, { oid }) {
+    initNewEvent({ commit }, { oid, tid}) {
       commit('setNewEvent', {
         oid,
+        tid,
         _id: createStringObjectId(),
         date: new Date(),
         title: 'Choisir un titre',

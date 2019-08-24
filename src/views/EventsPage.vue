@@ -7,7 +7,7 @@
                     <event :event="newEvent" creating/>
                     <v-card-actions>
                         <v-spacer/>
-                        <v-btn text @click="saveNewEvent">
+                        <v-btn text @click="save">
                             <v-icon large color="green">mdi-content-save-outline</v-icon>
                             enregistrer
                         </v-btn>
@@ -40,13 +40,19 @@
     computed: {
       ...mapState('event', ['events', 'newEvent']),
       ...mapState('user', ['currentUser']),
+      ...mapState('tribu', ['defaultTribu']),
     },
     methods: {
       ...mapActions('event', ['search', 'initNewEvent', 'open']),
-      ...mapActions('event', ['saveNewEvent','cancelNewEvent']),
-      ...mapActions('snack', ['snackerror']),
+      ...mapActions('event', ['saveNewEvent', 'cancelNewEvent']),
+      ...mapActions('snack', ['snack', 'snackerror']),
       startAddingEvent() {
-        this.initNewEvent({ oid: this.currentUser._id })
+        this.initNewEvent({ oid: this.currentUser._id, tid: this.defaultTribu._id })
+      },
+      save() {
+        this.saveNewEvent()
+          .then(() => this.snack({ text: 'Enregistré', color: 'green' }))
+          .catch(this.snackerror)
       },
     },
     mounted() {

@@ -9,7 +9,10 @@
             <v-list-item-title v-else @click="startEditTitle">{{title}}</v-list-item-title>
 
             <date-time-editor v-if="editingDate" @input="updateDate" :value="event.date"/>
-            <v-list-item-subtitle v-else @click="startEditDate">{{subtitle}}</v-list-item-subtitle>
+            <v-list-item-subtitle v-else @click="startEditDate">{{displayDate}}</v-list-item-subtitle>
+
+            <v-select ref="tribuSelect" v-if="editingTribu" :items="userTribus" label="Tribu" item-text="name" @blur="stopEditTribu" @change="updateTribu" return-object></v-select>
+            <v-list-item-subtitle v-else @click="startEditTribu">{{displayTribu}}</v-list-item-subtitle>
 
         </v-list-item-content>
 
@@ -37,17 +40,19 @@
   import { displayDate, displayHour } from '../../service/util'
   import DateEditor from '../form/DateEditor'
   import DateTimeEditor from '../form/DateTimeEditor'
+  import TribuIcon from '../tribu/TribuIcon'
 
   export default {
     name: 'event',
-    components: { DateTimeEditor, DateEditor, UserIcon },
+    components: { TribuIcon, DateTimeEditor, DateEditor, UserIcon },
     props: {
       event: Object,
       creating: Boolean,
     },
-    data: () => ({ show: false, user: null, editingTitle: false, editingDate: false, titleTemp: null }),
+    data: () => ({ show: false, user: null, tribu: null, editingTitle: false, editingDate: false, editingTribu: false, titleTemp: null }),
     methods: {
       ...mapActions('user', ['lookupUser']),
+      ...mapActions('tribu', ['lookupTribu']),
       ...mapActions('event', ['updateEvent', 'deleteEvent', 'expandEvent']),
       ...mapActions('snack', ['snack', 'snackerror']),
       trashEvent() {
@@ -83,6 +88,26 @@
             .catch(this.snackerror)
         }
       },
+      updateTribu(tribu) {
+        if (tribu._id === this.event.tid) {
+          this.editingTribu = false
+          return
+        }
+        if (this.creating) {
+          this.event.tid = tribu._id
+          this.editingTribu = false
+          this.fetchTribu()
+        } else {
+          this.updateEvent({ _id: this.event._id, tid: tribu._id })
+            .then(() => {
+              this.event.tid = tribu._id
+              this.editingTribu = false
+              this.fetchTribu()
+              this.snack({ text: 'Enregistré', color: 'green' })
+            })
+            .catch(this.snackerror)
+        }
+      },
       startEditTitle() {
         this.titleTemp = this.event.title
         this.editingTitle = true
@@ -96,21 +121,39 @@
       stopEditDate() {
         this.editingDate = false
       },
+      startEditTribu() {
+        this.editingTribu = true
+        this.$nextTick(() => {
+          this.$refs.tribuSelect.focus()
+          this.$refs.tribuSelect.activateMenu()
+        })
+      },
+      stopEditTribu() {
+        this.editingTribu = false
+      },
+      fetchUser() {
+        if (this.event && this.event.oid) {
+          this.lookupUser({ _id: this.event.oid }).then(user => this.user = user)
+        }
+      },
+      fetchTribu() {
+        if (this.event && this.event.tid) {
+          this.lookupTribu({ _id: this.event.tid }).then(tribu => this.tribu = tribu)
+        }
+      },
     },
     mounted() {
-      if (this.event) {
-        if (this.event.oid) {
-          this.lookupUser({ _id: this.event.oid })
-            .then(user => this.user = user)
-        } else {
-          console.error('event sans oid', this.event)
-        }
-      }
+      this.fetchUser()
+      this.fetchTribu()
     },
     computed: {
       ...mapState('event', ['expandedEvent']),
-      subtitle() {
+      ...mapState('tribu', ['userTribus']),
+      displayDate() {
         return `${displayDate(this.event.date)} à ${displayHour(this.event.date)}`
+      },
+      displayTribu() {
+        return `tribu ${this.tribu && this.tribu.name}`
       },
       title: {
         get() {

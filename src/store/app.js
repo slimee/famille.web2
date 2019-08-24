@@ -12,9 +12,10 @@ export default {
     },
   },
   actions: {
-    mount({ dispatch }) {
-      dispatch('darkFromStorage')
-      dispatch('user/userFromStorage', null, { root: true })
+    async mount({ dispatch, state }) {
+      await dispatch('darkFromStorage')
+      await dispatch('user/userFromStorage', null, { root: true })
+      await dispatch('tribu/tribuFromUser', state.currentUser, { root: true })
     },
     darkFromStorage({ commit }) {
       commit('setDark', localStorage.getItem('dark') === 'true')

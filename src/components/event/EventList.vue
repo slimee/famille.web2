@@ -1,6 +1,6 @@
 <template>
     <v-card>
-        <v-list two-line>
+        <v-list three-line>
             <template v-for="event in events">
                 <event :event="event" @select="select(event)" :key="event._id"/>
             </template>
